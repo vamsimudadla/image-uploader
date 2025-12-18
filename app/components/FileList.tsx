@@ -4,10 +4,10 @@ import FileCard from "./FileCard";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DEFAULT_DISPLAY_LIMIT } from "../utils/constants";
 import Loader from "./common/Loader";
+import { formatBytes } from "../utils/common";
 
 function FileList() {
   const { files, generateThumbnails, uppy, state } = useUppy();
-  console.log(state);
   const [displayLimit, setDisplayLimit] = useState(() =>
     Math.min(DEFAULT_DISPLAY_LIMIT, files.length)
   );
@@ -24,9 +24,42 @@ function FileList() {
     };
   }, [state]);
 
-  const uploadedProgress = useMemo(() => {
-    return state?.totalProgress || 0;
-  }, [state?.totalProgress]);
+  const totalUploadBytes = useMemo(() => {
+    const currentUploadFileIds = Object.values(state?.currentUploads || {})?.[0]
+      ?.fileIDs;
+    if (currentUploadFileIds?.length > 0) {
+      const totalBytes = currentUploadFileIds.reduce(
+        (acc, fileId) => acc + (state?.files?.[fileId]?.size || 0),
+        0
+      );
+      return totalBytes;
+    }
+    return 0;
+  }, [state]);
+
+  const uploadedBytes = useMemo(() => {
+    return (totalUploadBytes * (state?.totalProgress || 0)) / 100;
+  }, [state]);
+
+  const totalUploadFilesCount = useMemo(() => {
+    const currentUploadFileIds = Object.values(state?.currentUploads || {})?.[0]
+      ?.fileIDs;
+    return currentUploadFileIds?.length || 0;
+  }, [state]);
+
+  const currentUploadedFilesCount = useMemo(() => {
+    const currentUploadFileIds = Object.values(state?.currentUploads || {})?.[0]
+      ?.fileIDs;
+    if (currentUploadFileIds?.length > 0) {
+      const uploadedFilesCount = currentUploadFileIds.reduce(
+        (acc, fileId) =>
+          acc + (state?.files?.[fileId]?.progress?.uploadComplete ? 1 : 0),
+        0
+      );
+      return uploadedFilesCount;
+    }
+    return 0;
+  }, [state]);
 
   const displayFiles = useMemo(() => {
     return files.slice(0, displayLimit);
@@ -73,7 +106,16 @@ function FileList() {
         <Loader />
         <div className="flex flex-col gap-0.5">
           <p className="text-xs text-gray-400">Uploading...</p>
-          <p className="text-xs text-gray-400">{uploadedProgress}% of 100%</p>
+          <div className="text-xs text-gray-400">
+            <span>
+              {formatBytes(uploadedBytes)} of {formatBytes(totalUploadBytes)}
+            </span>
+            <span className="mx-2">.</span>
+            <span>
+              {currentUploadedFilesCount} of {totalUploadFilesCount}{" "}
+              {totalUploadFilesCount === 1 ? "file" : "files"}
+            </span>
+          </div>
         </div>
       </>
     ) : totalStatus.isCompleted ? (

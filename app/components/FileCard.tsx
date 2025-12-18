@@ -26,15 +26,19 @@ const FileCard = memo(function FileCard({ file }: FileCardProps) {
   }, [file]);
 
   const isUploading = useMemo(() => {
-    return !file.response && file.progress.uploadStarted;
+    return (
+      !file.error &&
+      file.progress.uploadStarted &&
+      !file.progress.uploadComplete
+    );
   }, [file]);
 
   const isUploadCompleted = useMemo(() => {
-    return file.progress.uploadComplete && file.response?.status === 200;
+    return file.progress.uploadComplete;
   }, [file]);
 
   const isUploadFailed = useMemo(() => {
-    return file.response && file.response.status !== 200;
+    return file.error;
   }, [file]);
 
   const statusIcon = useMemo(() => {
@@ -73,7 +77,11 @@ const FileCard = memo(function FileCard({ file }: FileCardProps) {
     }
 
     if (isUploadFailed) {
-      return <p className="text-xs text-red-500">Uploaded Failed</p>;
+      return (
+        <p className="text-xs text-red-500">
+          Uploaded Failed: {formattedFileSize}
+        </p>
+      );
     }
 
     return <p className="text-xs text-gray-400">{formattedFileSize}</p>;
