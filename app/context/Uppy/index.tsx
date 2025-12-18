@@ -2,23 +2,32 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
+  useState,
   useSyncExternalStore,
 } from "react";
-import Uppy, { Meta, State } from "@uppy/core";
+import Uppy, { Meta, State, UppyFile } from "@uppy/core";
 import XHRUpload from "@uppy/xhr-upload";
 import { v4 as uuidv4 } from "uuid";
 import { ProviderProps } from "../types";
+import ThumbnailGenerator from "@uppy/thumbnail-generator";
 
 interface UppyContextValue {
   uppy: Uppy<Meta, Record<string, never>> | null;
   state: State<Meta, Record<string, never>> | null;
+  files: UppyFile<Meta, Record<string, never>>[];
+  showFiles: boolean;
+  generateThumbnails: (files: UppyFile<Meta, Record<string, never>>[]) => void;
 }
 
 const UppyContext = createContext<UppyContextValue>({
   uppy: null,
   state: null,
+  files: [],
+  showFiles: false,
+  generateThumbnails: () => {},
 });
 
 export function UppyProvider({ children }: ProviderProps) {
@@ -53,6 +62,27 @@ export const useProviderUppy = () => {
     })
   );
 
+  useEffect(() => {
+    uppyRef.current.use(ThumbnailGenerator, {
+      thumbnailWidth: 300,
+      thumbnailType: "image/webp",
+      lazy: true,
+    });
+  }, []);
+
+  const generateThumbnails = useCallback(
+    (files: UppyFile<Meta, Record<string, never>>[]) => {
+      files.forEach((file) => {
+        const thumbnailGenerator =
+          uppyRef.current?.getPlugin("ThumbnailGenerator");
+        if (!thumbnailGenerator?.queue?.some((fileId) => fileId === file.id)) {
+          uppyRef.current?.emit("thumbnail:request", file);
+        }
+      });
+    },
+    []
+  );
+
   const subscribe = useMemo(
     () => uppyRef.current.store.subscribe.bind(uppyRef.current.store),
     [uppyRef.current.store]
@@ -67,5 +97,15 @@ export const useProviderUppy = () => {
 
   const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
-  return { uppy: uppyRef.current, state };
+  const allFiles = useMemo(() => {
+    return state?.files ? Object.values(state.files) : [];
+  }, [state]);
+
+  return {
+    uppy: uppyRef.current,
+    files: allFiles,
+    showFiles: state?.files ? Object.values(state.files).length > 0 : false,
+    state,
+    generateThumbnails,
+  };
 };

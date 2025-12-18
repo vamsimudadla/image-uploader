@@ -5,11 +5,7 @@ import { useUppy } from "../context/Uppy";
 function ImageUploader() {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { uppy, state } = useUppy();
-
-  useEffect(() => {
-    console.log("state-updated", state);
-  }, [state]);
+  const { uppy } = useUppy();
 
   // Prevent browser's default file opening behavior
   useEffect(() => {
@@ -88,11 +84,11 @@ function ImageUploader() {
   }, []);
 
   return (
-    <div className="w-full max-w-2xl">
+    <div className="w-full flex items-center justify-center">
       {/* Drag & Drop Area */}
       <div
         className={`
-          flex flex-col items-center justify-center m-4 p-8 size-full 
+          flex flex-col items-center justify-center m-4 p-8 w-full 
           max-w-lg mx-auto bg-white border-2 border-dashed rounded-xl gap-4 
           cursor-pointer transition-all duration-300
           ${
