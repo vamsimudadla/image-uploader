@@ -1,1 +1,1 @@
-export const DEFAULT_DISPLAY_LIMIT = 20;
+export const DEFAULT_DISPLAY_LIMIT = 50;
