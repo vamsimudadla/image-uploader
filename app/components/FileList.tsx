@@ -41,6 +41,10 @@ function FileList() {
     uppy?.clear();
   }
 
+  function upload() {
+    uppy?.upload();
+  }
+
   return (
     <div className="flex flex-col flex-1">
       <div className="flex flex-col flex-1 overflow-auto p-2.5" ref={rootRef}>
@@ -53,7 +57,10 @@ function FileList() {
       </div>
       <div className="flex items-center justify-between h-14 shadow-2xl bg-white z-10 px-4">
         <div className="flex items-center gap-4">
-          <button className="bg-orange-500 text-sm font-bold text-white px-6 py-1 rounded-lg cursor-pointer">
+          <button
+            onClick={upload}
+            className="bg-orange-500 text-sm font-bold text-white px-6 py-1 rounded-lg cursor-pointer"
+          >
             Upload
           </button>
           <button
