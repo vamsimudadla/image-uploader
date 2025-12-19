@@ -57,25 +57,22 @@ export const useProviderUppy = () => {
 
         if (Object.hasOwn(files, currentFile.id)) {
           currentFile.id = `${currentFile.id}-${uuidv4()}`;
-          return true;
         }
-        return !Object.hasOwn(files, currentFile.id);
+        return true;
       },
-    }).use(XHRUpload, {
-      endpoint: `https://api.cloudinary.com/v1_1/${"djaeiwf5o"}/upload`,
-      method: "POST",
-      formData: true,
-      fieldName: "file",
     })
+      .use(ThumbnailGenerator, {
+        thumbnailWidth: 256,
+        thumbnailType: "image/jpeg",
+        lazy: true,
+      })
+      .use(XHRUpload, {
+        endpoint: `https://api.cloudinary.com/v1_1/${"djaeiwf5o"}/upload`,
+        method: "POST",
+        formData: true,
+        fieldName: "file",
+      })
   );
-
-  useEffect(() => {
-    uppyRef.current.use(ThumbnailGenerator, {
-      thumbnailWidth: 300,
-      thumbnailType: "image/webp",
-      lazy: true,
-    });
-  }, []);
 
   const generateThumbnails = useCallback(
     (files: UppyFile<Meta, Record<string, never>>[]) => {

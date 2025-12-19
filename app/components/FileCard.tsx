@@ -1,5 +1,5 @@
 import { Meta, UppyFile } from "@uppy/core";
-import { memo, useMemo } from "react";
+import { memo, useEffect, useMemo } from "react";
 import CloseCircleIcon from "../icons/CloseCircleIcon";
 import { useUppy } from "../context/Uppy";
 import Loader from "./common/Loader";
@@ -12,14 +12,19 @@ interface FileCardProps {
 
 const FileCard = memo(function FileCard({ file }: FileCardProps) {
   const { uppy } = useUppy();
-
-  const preview = useMemo(() => {
-    return file.preview;
-  }, [file]);
+  const { preview } = file;
 
   function removeFile() {
     uppy?.removeFile(file.id);
   }
+
+  useEffect(() => {
+    return () => {
+      if (file.preview?.startsWith("blob:")) {
+        URL.revokeObjectURL(file.preview);
+      }
+    };
+  }, [file.preview]);
 
   const formattedFileSize = useMemo(() => {
     return formatBytes(file.size || 0);
