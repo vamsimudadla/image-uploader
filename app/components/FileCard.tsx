@@ -1,5 +1,5 @@
 import { Meta, UppyFile } from "@uppy/core";
-import { memo, useEffect, useMemo } from "react";
+import { memo, SyntheticEvent, useEffect, useMemo } from "react";
 import CloseCircleIcon from "../icons/CloseCircleIcon";
 import { useUppy } from "../context/Uppy";
 import Loader from "./common/Loader";
@@ -45,6 +45,11 @@ const FileCard = memo(function FileCard({ file }: FileCardProps) {
   const isUploadFailed = useMemo(() => {
     return file.error;
   }, [file]);
+
+  const onImageLoaded = (e: SyntheticEvent<HTMLImageElement, Event>) => {
+    const calculatedHeight = (e.target as HTMLImageElement).clientHeight;
+    uppy?.setFileMeta(file.id, { thumbnailHeight: calculatedHeight });
+  };
 
   const statusIcon = useMemo(() => {
     if (isUploading) {
@@ -93,14 +98,19 @@ const FileCard = memo(function FileCard({ file }: FileCardProps) {
   };
 
   return (
-    <div className="flex flex-col p-2.5 bg-white shadow-2xl rounded-xl w-52 gap-4">
+    <div className="flex flex-col rounded-xl w-full gap-4">
       <div
         className={`flex rounded-lg relative ${
           preview ? "" : "bg-gray-300 aspect-square"
         }`}
       >
         {preview ? (
-          <img src={preview} alt={file.name} className="rounded-lg" />
+          <img
+            src={preview}
+            onLoad={onImageLoaded}
+            alt={file.name}
+            className="rounded-lg"
+          />
         ) : null}
 
         <div className="flex items-center justify-center rounded-full absolute top-0.5 right-0.5 w-5 h-5 bg-zinc-50">
