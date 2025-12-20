@@ -1,9 +1,13 @@
 import {
   createContext,
+  Dispatch,
+  SetStateAction,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
+  useState,
   useSyncExternalStore,
 } from "react";
 import Uppy, { Meta, State, UppyFile } from "@uppy/core";
@@ -16,7 +20,19 @@ interface UppyContextValue {
   uppy: Uppy<Meta, Record<string, never>> | null;
   state: State<Meta, Record<string, never>> | null;
   files: UppyFile<Meta, Record<string, never>>[];
+  rejectedFiles: {
+    data: File;
+    error: string;
+  }[];
   showFiles: boolean;
+  setRejectedFiles: Dispatch<
+    SetStateAction<
+      {
+        data: File;
+        error: string;
+      }[]
+    >
+  >;
   generateThumbnails: (files: UppyFile<Meta, Record<string, never>>[]) => void;
   cancelThumbnailGeneration: (
     file: UppyFile<Meta, Record<string, never>>
@@ -27,7 +43,9 @@ const UppyContext = createContext<UppyContextValue>({
   uppy: null,
   state: null,
   files: [],
+  rejectedFiles: [],
   showFiles: false,
+  setRejectedFiles: () => {},
   generateThumbnails: () => {},
   cancelThumbnailGeneration: () => {},
 });
@@ -75,6 +93,15 @@ export const useProviderUppy = () => {
         fieldName: "file",
       })
   );
+  const [rejectedFiles, setRejectedFiles] = useState<
+    { data: File; error: string }[]
+  >([]);
+
+  useEffect(() => {
+    return () => {
+      uppyRef.current?.destroy();
+    };
+  }, []);
 
   const generateThumbnails = useCallback(
     (files: UppyFile<Meta, Record<string, never>>[]) => {
@@ -117,9 +144,13 @@ export const useProviderUppy = () => {
   return {
     uppy: uppyRef.current,
     files: allFiles,
-    showFiles: state?.files ? Object.values(state.files).length > 0 : false,
+    showFiles: state?.files
+      ? Object.values(state.files).length > 0 && rejectedFiles.length === 0
+      : false,
     state,
     generateThumbnails,
     cancelThumbnailGeneration,
+    rejectedFiles,
+    setRejectedFiles,
   };
 };

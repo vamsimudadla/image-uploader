@@ -5,7 +5,7 @@ import { useUppy } from "../context/Uppy";
 function ImageUploader() {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { uppy } = useUppy();
+  const { uppy, setRejectedFiles, rejectedFiles, files } = useUppy();
 
   useEffect(() => {
     const preventDefaultDragDrop = (e: DragEvent) => {
@@ -70,11 +70,13 @@ function ImageUploader() {
           },
         });
       } catch (error: any) {
+        let message = "";
         if (error.isRestriction) {
-          alert(`File rejected: ${error.message}`);
+          message = `File rejected: ${error.message}`;
         } else {
-          console.error("Error adding file:", error);
+          message = `Error adding file.`;
         }
+        setRejectedFiles((prev) => [...prev, { data: file, error: message }]);
       }
     });
   }, []);
@@ -131,9 +133,22 @@ function ImageUploader() {
               </>
             )}
           </div>
-
-          <p className="text-sm text-gray-500 text-center">
-            JPG, JPEG, PNG, GIF, WEBP. Max file size: 10MB.
+          <p
+            className={`text-sm ${
+              rejectedFiles.length && files.length === 0
+                ? "text-red-500"
+                : "text-gray-500"
+            } text-center`}
+          >
+            {rejectedFiles.length && files.length === 0 ? (
+              <>
+                Files Rejected <br />
+              </>
+            ) : (
+              ""
+            )}
+            Supported Formats: JPG, JPEG, PNG, GIF, WEBP <br />
+            Max file size: 10MB.
           </p>
         </div>
       </div>
