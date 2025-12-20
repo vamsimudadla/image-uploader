@@ -2,10 +2,8 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useRef,
-  useState,
   useSyncExternalStore,
 } from "react";
 import Uppy, { Meta, State, UppyFile } from "@uppy/core";
@@ -20,6 +18,9 @@ interface UppyContextValue {
   files: UppyFile<Meta, Record<string, never>>[];
   showFiles: boolean;
   generateThumbnails: (files: UppyFile<Meta, Record<string, never>>[]) => void;
+  cancelThumbnailGeneration: (
+    file: UppyFile<Meta, Record<string, never>>
+  ) => void;
 }
 
 const UppyContext = createContext<UppyContextValue>({
@@ -28,6 +29,7 @@ const UppyContext = createContext<UppyContextValue>({
   files: [],
   showFiles: false,
   generateThumbnails: () => {},
+  cancelThumbnailGeneration: () => {},
 });
 
 export function UppyProvider({ children }: ProviderProps) {
@@ -87,6 +89,13 @@ export const useProviderUppy = () => {
     []
   );
 
+  const cancelThumbnailGeneration = useCallback(
+    (file: UppyFile<Meta, Record<string, never>>) => {
+      uppyRef.current?.emit("thumbnail:cancel", file);
+    },
+    []
+  );
+
   const subscribe = useMemo(
     () => uppyRef.current.store.subscribe.bind(uppyRef.current.store),
     [uppyRef.current.store]
@@ -111,5 +120,6 @@ export const useProviderUppy = () => {
     showFiles: state?.files ? Object.values(state.files).length > 0 : false,
     state,
     generateThumbnails,
+    cancelThumbnailGeneration,
   };
 };

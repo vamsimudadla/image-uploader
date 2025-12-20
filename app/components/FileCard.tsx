@@ -1,25 +1,51 @@
 import { Meta, UppyFile } from "@uppy/core";
-import { memo, SyntheticEvent, useEffect, useMemo } from "react";
+import { memo, SyntheticEvent, useEffect, useMemo, useRef } from "react";
 import CloseCircleIcon from "../icons/CloseCircleIcon";
 import { useUppy } from "../context/Uppy";
 import Loader from "./common/Loader";
 import { formatBytes } from "../utils/common";
 import CheckmarkIcon from "../icons/CheckMark";
+import useIntersectionObserver from "../hooks/IntersectionObserver";
 
 interface FileCardProps {
   file: UppyFile<Meta, Record<string, never>>;
 }
 
 const FileCard = memo(function FileCard({ file }: FileCardProps) {
-  const { uppy } = useUppy();
+  const { uppy, generateThumbnails, cancelThumbnailGeneration } = useUppy();
   const { preview } = file;
+
+  const imageCardRef = useRef<HTMLDivElement | null>(null);
+  const { observe, disconnect } = useIntersectionObserver({
+    onVisibilityChange: handleVisibilityChange,
+    options: {
+      scrollMargin: "300px 0px 300px 0px",
+    },
+    debounceDelay: 150,
+  });
+
+  function handleVisibilityChange(itemId: string, isVisible: boolean) {
+    if (file.preview) {
+      disconnect();
+    } else {
+      if (isVisible) {
+        generateThumbnails([file]);
+      } else {
+        cancelThumbnailGeneration(file);
+      }
+    }
+  }
 
   function removeFile() {
     uppy?.removeFile(file.id);
   }
 
   useEffect(() => {
+    if (!file.preview && imageCardRef.current) {
+      observe(imageCardRef.current, file.id);
+    }
     return () => {
+      disconnect();
       if (file.preview?.startsWith("blob:")) {
         URL.revokeObjectURL(file.preview);
       }
@@ -98,7 +124,7 @@ const FileCard = memo(function FileCard({ file }: FileCardProps) {
   };
 
   return (
-    <div className="flex flex-col rounded-xl w-full gap-4">
+    <div className="flex flex-col rounded-xl w-full gap-4" ref={imageCardRef}>
       <div
         className={`flex rounded-lg relative ${
           preview ? "" : "bg-gray-300 aspect-square"

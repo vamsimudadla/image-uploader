@@ -14,7 +14,7 @@ import Loader from "./common/Loader";
 import { formatBytes } from "../utils/common";
 
 function FileList() {
-  const { files, generateThumbnails, uppy, state } = useUppy();
+  const { files, uppy, state } = useUppy();
 
   const [displayLimit, setDisplayLimit] = useState(() =>
     Math.min(DEFAULT_DISPLAY_LIMIT, files.length)
@@ -81,11 +81,6 @@ function FileList() {
     },
     [displayLimit, files]
   );
-
-  useEffect(() => {
-    const nonPreviewFiles = displayFiles.filter((file) => !file.preview);
-    generateThumbnails(nonPreviewFiles);
-  }, [displayFiles]);
 
   const hasNextPage = useMemo(() => {
     return displayFiles.length < files.length;
