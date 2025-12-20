@@ -174,14 +174,12 @@ function FileList() {
     );
   }, [totalStatus]);
 
-  // Calculate columns based on container width
   const columns = useMemo(() => {
     if (containerWidth === 0) return 1;
     const cols = Math.floor(containerWidth / (COLUMN_WIDTH + COLUMN_GAP));
     return Math.max(1, cols);
   }, [containerWidth]);
 
-  // Calculate masonry layout (memoized for performance)
   const layout = useMemo(() => {
     const columnHeights = new Array(columns).fill(0);
     const positionedItems: {
@@ -215,7 +213,6 @@ function FileList() {
     };
   }, [displayFiles, columns]);
 
-  // Handle container resize
   useEffect(() => {
     const observer = new ResizeObserver((entries) => {
       for (let entry of entries) {
@@ -231,14 +228,16 @@ function FileList() {
   }, []);
 
   return (
-    <div className="flex flex-col flex-1">
-      <div className="flex flex-col flex-1 overflow-auto p-2.5">
-        <div>
-          <div
-            ref={containerRef}
-            style={{ height: layout.containerHeight }}
-            className="relative"
-          >
+    <div className="flex flex-col flex-1" ref={containerRef}>
+      <div className="flex flex-col flex-1 overflow-y-auto p-2.5">
+        <div
+          style={{
+            marginLeft: Math.floor(
+              (containerWidth - 20 - (COLUMN_WIDTH + COLUMN_GAP) * columns) / 2
+            ),
+          }}
+        >
+          <div style={{ height: layout.containerHeight }} className="relative">
             {layout.items.map((item) => (
               <div
                 style={{
@@ -260,7 +259,7 @@ function FileList() {
         </div>
         {hasNextPage && <div ref={paginationRef} className="flex"></div>}
       </div>
-      <div className="flex items-center justify-between h-14 shadow-2xl bg-white z-10 px-4">
+      <div className="flex items-center justify-center h-14 shadow-2xl bg-white z-10 px-4 md:justify-between">
         <div className="flex items-center gap-4">{actionButtons}</div>
       </div>
     </div>

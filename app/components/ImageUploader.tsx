@@ -7,7 +7,6 @@ function ImageUploader() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uppy } = useUppy();
 
-  // Prevent browser's default file opening behavior
   useEffect(() => {
     const preventDefaultDragDrop = (e: DragEvent) => {
       if (e.dataTransfer?.types.includes("Files")) {
@@ -25,7 +24,6 @@ function ImageUploader() {
     };
   }, []);
 
-  // Handle drag events
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -48,7 +46,6 @@ function ImageUploader() {
     addFilesToUppy(droppedFiles);
   }, []);
 
-  // Handle file input
   const handleFileInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const selectedFiles = Array.from(e.target.files || []);
@@ -58,7 +55,6 @@ function ImageUploader() {
     []
   );
 
-  // Add files to Uppy
   const addFilesToUppy = useCallback((fileList: File[]) => {
     if (!uppy) return;
 
@@ -85,11 +81,10 @@ function ImageUploader() {
 
   return (
     <div className="w-full flex items-center justify-center">
-      {/* Drag & Drop Area */}
       <div
         className={`
           flex flex-col items-center justify-center m-4 p-8 w-full 
-          max-w-lg mx-auto bg-white border-2 border-dashed rounded-xl gap-4 
+          max-w-lg sm:mx-auto bg-white border-2 border-dashed rounded-xl gap-4 
           cursor-pointer transition-all duration-300
           ${
             isDragging
@@ -124,10 +119,15 @@ function ImageUploader() {
               <p>Drop images here...</p>
             ) : (
               <>
-                <p className="text-lg font-medium text-gray-800">
+                <button className="block sm:hidden border bg-orange-500 text-white font-bold px-4 py-2 rounded-lg">
+                  Upload from Gallery
+                </button>
+                <p className="hidden sm:block text-lg font-medium text-gray-800">
                   Drag and drop images here
                 </p>
-                <p className="text-gray-600">or choose from your device</p>
+                <p className="hidden sm:block text-gray-600">
+                  or choose from your device
+                </p>
               </>
             )}
           </div>
