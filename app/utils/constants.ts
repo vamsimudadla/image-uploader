@@ -1,4 +1,4 @@
-export const DEFAULT_DISPLAY_LIMIT = 10;
+export const DEFAULT_DISPLAY_LIMIT = 50;
 export const COLUMN_WIDTH = 208;
 export const COLUMN_GAP = 10;
 export const CARD_PADDING = 10;
