@@ -1,4 +1,3 @@
-import useInfiniteScroll from "react-infinite-scroll-hook";
 import { useUppy } from "../context/Uppy";
 import FileCard from "./FileCard";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -12,6 +11,7 @@ import {
 } from "../utils/constants";
 import Loader from "./common/Loader";
 import { formatBytes } from "../utils/common";
+import useIntersectionObserver from "../hooks/IntersectionObserver";
 
 function FileList() {
   const { files, uppy, state } = useUppy();
@@ -21,6 +21,7 @@ function FileList() {
   );
   const [containerWidth, setContainerWidth] = useState(0);
   const containerRef = useRef(null);
+  const paginationRef = useRef<HTMLDivElement | null>(null);
 
   const totalStatus = useMemo(() => {
     const currentUploadsCount = Object.keys(state?.currentUploads || {}).length;
@@ -77,7 +78,7 @@ function FileList() {
 
   const loadMoreFiles = useCallback(
     (limit: number = DEFAULT_DISPLAY_LIMIT) => {
-      setDisplayLimit(Math.min(displayLimit + limit, files.length));
+      setDisplayLimit((prevLimit) => Math.min(prevLimit + limit, files.length));
     },
     [displayLimit, files]
   );
@@ -86,12 +87,28 @@ function FileList() {
     return displayFiles.length < files.length;
   }, [displayFiles, files]);
 
-  const [infiniteRef, { rootRef }] = useInfiniteScroll({
-    loading: false,
-    hasNextPage: hasNextPage,
-    onLoadMore: loadMoreFiles,
-    rootMargin: "0px 0px 400px 0px",
+  function handleVisibilityChange(id: string, isVisible: boolean) {
+    if (isVisible) {
+      loadMoreFiles();
+    }
+  }
+
+  const { observe, disconnect } = useIntersectionObserver({
+    onVisibilityChange: handleVisibilityChange,
+    options: {
+      scrollMargin: "0px 0px 400px 0px",
+    },
+    debounceDelay: 150,
   });
+
+  useEffect(() => {
+    if (hasNextPage && paginationRef.current) {
+      observe(paginationRef.current, "pagination-element");
+    }
+    return () => {
+      disconnect();
+    };
+  }, [hasNextPage]);
 
   function removeAll() {
     uppy?.clear();
@@ -215,7 +232,7 @@ function FileList() {
 
   return (
     <div className="flex flex-col flex-1">
-      <div className="flex flex-col flex-1 overflow-auto p-2.5" ref={rootRef}>
+      <div className="flex flex-col flex-1 overflow-auto p-2.5">
         <div>
           <div
             ref={containerRef}
@@ -228,7 +245,7 @@ function FileList() {
                   position: "absolute",
                   left: item.left,
                   top: item.top,
-                  transition: "top 0.3s ease",
+                  transition: "top 0.1s ease",
                   contain: "layout style paint",
                   width: COLUMN_WIDTH,
                   padding: CARD_PADDING,
@@ -241,7 +258,7 @@ function FileList() {
             ))}
           </div>
         </div>
-        {hasNextPage && <div ref={infiniteRef} className="flex"></div>}
+        {hasNextPage && <div ref={paginationRef} className="flex"></div>}
       </div>
       <div className="flex items-center justify-between h-14 shadow-2xl bg-white z-10 px-4">
         <div className="flex items-center gap-4">{actionButtons}</div>

@@ -97,6 +97,7 @@ const useIntersectionObserver = ({
         ...options,
       }
     );
+
     return cleanup;
   }, []);
 
