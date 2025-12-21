@@ -1,6 +1,7 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { useUppy } from "../context/Uppy";
+import Modal from "./common/Modal";
 
 function ImageUploader() {
   const [isDragging, setIsDragging] = useState(false);
@@ -81,6 +82,19 @@ function ImageUploader() {
     });
   }, []);
 
+  function proceedWithAcceptedFiles() {
+    setRejectedFiles([]);
+  }
+
+  function cancelUpload() {
+    uppy?.clear();
+    setRejectedFiles([]);
+  }
+
+  const showErrorModal = useMemo(() => {
+    return files.length > 0 && rejectedFiles.length > 0;
+  }, [files, rejectedFiles]);
+
   return (
     <div className="w-full flex items-center justify-center">
       <div
@@ -152,6 +166,35 @@ function ImageUploader() {
           </p>
         </div>
       </div>
+      <Modal open={showErrorModal}>
+        <div className="flex flex-col gap-2.5 p-4">
+          <p className="text-md text-gray-500 font-bold">
+            Do you want to proceed?
+          </p>
+          <p className="text-sm text-green-500">
+            Files Accepted: {files.length}
+          </p>
+          <p className="text-sm text-red-500">
+            Files Rejected: {rejectedFiles.length} <br /> Supported Formats:
+            JPG, JPEG, PNG, GIF, WEBP <br />
+            Max file size: 10MB.
+          </p>
+          <div className="flex items-center justify-end gap-4">
+            <button
+              onClick={cancelUpload}
+              className="bg-white font-bold text-sm text-gray-700 px-6 py-1 rounded-lg cursor-pointer border"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={proceedWithAcceptedFiles}
+              className="bg-orange-500 text-sm font-bold text-white px-6 py-1 rounded-lg cursor-pointer"
+            >
+              Proceed
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
