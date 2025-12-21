@@ -2,7 +2,7 @@ Image Uploader to upload images to your [Cloudinary](https://cloudinary.com/)
 
 ## Getting Started
 
-Setup your Cloudinary account. For instructions: [click here](https://)
+Setup your Cloudinary account. For instructions: [click here](https://github.com/vamsimudadla/image-uploader/blob/main/cloudinary-setup.md)
 
 Click here for [demo](https://image-uploader-black.vercel.app/)
 

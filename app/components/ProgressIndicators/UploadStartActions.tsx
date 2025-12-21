@@ -118,7 +118,7 @@ function UploadStartActions() {
             <p className="text-xs text-gray-700 mt-0.5">
               For Cloudinary setup instructions:{" "}
               <a
-                href=""
+                href="https://github.com/vamsimudadla/image-uploader/blob/main/cloudinary-setup.md"
                 target="_blank"
                 className="underline decoration-1 cursor-pointer text-blue-500"
               >
