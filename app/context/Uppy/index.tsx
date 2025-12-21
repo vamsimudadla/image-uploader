@@ -68,13 +68,6 @@ export const useProviderUppy = () => {
       },
       autoProceed: false,
       onBeforeFileAdded: (currentFile, files) => {
-        currentFile.meta = {
-          ...currentFile.meta,
-          resource_type: "auto",
-          upload_preset: "ml_default",
-        };
-        delete currentFile.meta.type;
-
         if (Object.hasOwn(files, currentFile.id)) {
           currentFile.id = `${currentFile.id}-${uuidv4()}`;
         }
@@ -87,10 +80,11 @@ export const useProviderUppy = () => {
         lazy: true,
       })
       .use(XHRUpload, {
-        endpoint: `https://api.cloudinary.com/v1_1/${"djaeiwf5o"}/upload`,
+        endpoint: "",
         method: "POST",
         formData: true,
         fieldName: "file",
+        allowedMetaFields: ["name", "resource_type", "upload_preset"],
       })
   );
   const [rejectedFiles, setRejectedFiles] = useState<

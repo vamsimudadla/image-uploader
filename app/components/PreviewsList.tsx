@@ -13,7 +13,6 @@ import useIntersectionObserver from "../hooks/IntersectionObserver";
 
 function PreviewsList() {
   const { files } = useUppy();
-
   const [displayLimit, setDisplayLimit] = useState(() =>
     Math.min(DEFAULT_DISPLAY_LIMIT, files.length)
   );
