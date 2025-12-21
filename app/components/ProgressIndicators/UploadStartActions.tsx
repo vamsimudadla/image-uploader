@@ -5,6 +5,7 @@ function UploadStartActions() {
   const { uppy } = useUppy();
 
   function removeAll() {
+    uppy?.emit("cancel-all");
     uppy?.clear();
   }
 
